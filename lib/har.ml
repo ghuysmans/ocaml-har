@@ -71,6 +71,12 @@ module Entry = struct
       (* FIXME *)
       [@@deriving yojson]
 
+    type same_site =
+      | Lax
+      | Strict
+      | No [@name "None"]
+      [@@deriving yojson]
+
     type cookie = {
       name: string;
       value: string;
@@ -79,7 +85,7 @@ module Entry = struct
       expires: dt;
       http_only: bool [@key "httpOnly"];
       secure: bool;
-      same_site: bool [@key "sameSite"];
+      same_site: same_site option [@key "sameSite"];
     } [@@deriving yojson]
 
     type post_data = {
