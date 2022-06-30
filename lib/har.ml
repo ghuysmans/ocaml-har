@@ -54,6 +54,8 @@ module Entry = struct
     value: string;
   }
 
+  type mime_type = string
+
   module Request = struct
     type meth =
       | GET
@@ -71,6 +73,12 @@ module Entry = struct
       same_site: bool [@key "sameSite"];
     }
 
+    type post_data = {
+      mime_type: mime_type [@key "mimeType"];
+      text: string;
+      params: nv list;
+    }
+
     type t = {
       meth: meth [@key "method"];
       url: Uri.t;
@@ -80,12 +88,11 @@ module Entry = struct
       cookies: cookie list;
       headers_size: int [@key "headersSize"];
       body_size: int [@key "bodySize"];
+      post_data: post_data [@key "postData"];
     }
   end
 
   module Response = struct
-    type mime_type = string
-
     type encoding = Base64 (* TODO "base64" *)
 
     type content = {
