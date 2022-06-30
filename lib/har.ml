@@ -135,7 +135,17 @@ module Entry = struct
 
   type resource_type = string [@@deriving yojson] (* TODO xhr, etc. *)
 
-  type cache = unit [@@deriving yojson] (* TODO empty object *)
+  type cache_state = {
+    expires: dt;
+    last_access: dt [@key "lastAccess"];
+    etag: string [@key "eTag"];
+    hit_count: int [@key "hitCount"];
+  } [@@deriving yojson]
+
+  type cache = {
+    before_request: cache_state option [@key "beforeRequest"];
+    after_request: cache_state option [@key "afterRequest"];
+  } [@@deriving yojson]
 
   type timings = {
     blocked: float;
@@ -153,7 +163,7 @@ module Entry = struct
     initiator: Initiator.t [@key "_initiator"];
     priority: priority [@key "_priority"];
     resource_type: resource_type [@key "_resourceType"];
-    cache: cache;
+    cache: cache option;
     connection: string option;
     page_ref: string [@key "pageref"];
     request: Request.t;
