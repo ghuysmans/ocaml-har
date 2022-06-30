@@ -22,6 +22,16 @@ let def_to_yojson f = function
   | None -> failwith "def_to_yojson: please specify [@default None]"
   | Some x -> f x
 
+type 'a tag = 'a
+let tag_of_yojson f j =
+  match f (`List [j]) with
+  | Error e -> Error e
+  | Ok x -> Ok x
+let tag_to_yojson f x =
+  match f x with
+  | `List (h :: _) -> h
+  | _ -> failwith "tag_to_yojson"
+
 module Page = struct
   type page_timings = {
     on_content_load: float [@default -1.] [@key "onContentLoad"];
@@ -94,7 +104,7 @@ module Entry = struct
       expires: dt def [@default None];
       http_only: bool def [@default None] [@key "httpOnly"];
       secure: bool def [@default None];
-      same_site: same_site def [@default None] [@key "sameSite"];
+      same_site: same_site tag def [@default None] [@key "sameSite"];
     } [@@deriving yojson]
 
     type post_data = {
@@ -104,7 +114,7 @@ module Entry = struct
     } [@@deriving yojson]
 
     type t = {
-      meth: meth [@key "method"];
+      meth: meth tag [@key "method"];
       url: uri;
       http_version: string [@key "httpVersion"];
       headers: nv list;
@@ -126,7 +136,7 @@ module Entry = struct
       compression: int def [@default None];
       mime_type: mime_type [@key "mimeType"];
       text: string def [@default None];
-      encoding: encoding def [@default None];
+      encoding: encoding tag def [@default None];
     } [@@deriving yojson]
 
     type error = unit [@@deriving yojson] (* FIXME *)
