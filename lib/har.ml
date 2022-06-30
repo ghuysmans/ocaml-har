@@ -171,7 +171,7 @@ module Entry = struct
     resource_type: resource_type [@key "_resourceType"];
     cache: cache option;
     connection: string option;
-    page_ref: string [@key "pageref"];
+    page_ref: string option [@key "pageref"];
     request: Request.t;
     response: Response.t;
     server_ip_address: string [@key "serverIPAddress"];
