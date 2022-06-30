@@ -16,6 +16,6 @@
 (package
  (name har)
  (synopsis "HTTP Archive parser and tools")
- (depends ocaml dune base64))
+ (depends ocaml dune base64 ppx_deriving_yojson))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
