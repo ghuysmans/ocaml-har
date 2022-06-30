@@ -13,10 +13,19 @@ let uri_of_yojson j =
     Error "uri_of_yojson"
 let uri_to_yojson u = `String (Uri.to_string u)
 
+type 'a def = 'a option
+let def_of_yojson f j =
+  match f j with
+  | Error e -> Error e
+  | Ok x -> Ok (Some x)
+let def_to_yojson f = function
+  | None -> failwith "def_to_yojson: please specify [@default None]"
+  | Some x -> f x
+
 module Page = struct
   type page_timings = {
-    on_content_load: float [@key "onContentLoad"];
-    on_load: float [@key "onLoad"];
+    on_content_load: float [@default -1.] [@key "onContentLoad"];
+    on_load: float [@default -1.] [@key "onLoad"];
   } [@@deriving yojson]
 
   type t = {
@@ -46,7 +55,7 @@ module Entry = struct
 
     type stack = {
       call_frames: call_frame list [@key "callFrames"];
-      parent: parent;
+      parent: parent def [@default None];
     } [@@deriving yojson]
 
     type typ = string [@@deriving yojson] (* TODO script, etc. *)
@@ -80,12 +89,12 @@ module Entry = struct
     type cookie = {
       name: string;
       value: string;
-      path: string;
-      domain: string;
-      expires: dt;
-      http_only: bool [@key "httpOnly"];
-      secure: bool;
-      same_site: same_site option [@key "sameSite"];
+      path: string def [@default None];
+      domain: string def [@default None];
+      expires: dt def [@default None];
+      http_only: bool def [@default None] [@key "httpOnly"];
+      secure: bool def [@default None];
+      same_site: same_site def [@default None] [@key "sameSite"];
     } [@@deriving yojson]
 
     type post_data = {
@@ -103,21 +112,21 @@ module Entry = struct
       cookies: cookie list;
       headers_size: int [@key "headersSize"];
       body_size: int [@key "bodySize"];
-      post_data: post_data [@key "postData"];
+      post_data: post_data def [@default None] [@key "postData"];
     } [@@deriving yojson]
   end
 
   module Response = struct
     type encoding =
       | Base64 [@name "base64"]
-      | Raw (* FIXME? *)
       [@@deriving yojson]
 
     type content = {
       size: int;
+      compression: int def [@default None];
       mime_type: mime_type [@key "mimeType"];
-      text: string;
-      encoding: encoding [@default Raw];
+      text: string def [@default None];
+      encoding: encoding def [@default None];
     } [@@deriving yojson]
 
     type error = unit [@@deriving yojson] (* FIXME *)
@@ -128,12 +137,13 @@ module Entry = struct
       http_version: string [@key "httpVersion"];
       headers: nv list;
       cookies: nv list;
-      content: content;
-      redirect_url: uri [@default Uri.empty] [@key "redirectURL"];
+      content: content option;
+      redirect_url: uri [@key "redirectURL"];
       headers_size: int [@key "headersSize"];
       body_size: int [@key "bodySize"];
-      transfer_size: int [@key "_transferSize"];
-      error: error [@key "_error"];
+      transfer_size: int def [@default None] [@key "_transferSize"];
+      error: error def [@default None] [@key "_error"];
+      fulfilled_by: string def [@default None] [@key "_fulfilledBy"];
     } [@@deriving yojson]
   end
 
@@ -143,38 +153,38 @@ module Entry = struct
 
   type cache_state = {
     expires: dt;
-    last_access: dt [@key "lastAccess"];
-    etag: string [@key "eTag"];
-    hit_count: int [@key "hitCount"];
+    last_access: dt def [@default None] [@key "lastAccess"];
+    etag: string def [@default None] [@key "eTag"];
+    hit_count: int def [@default None] [@key "hitCount"];
   } [@@deriving yojson]
 
   type cache = {
-    before_request: cache_state option [@key "beforeRequest"];
-    after_request: cache_state option [@key "afterRequest"];
+    before_request: cache_state def [@default None] [@key "beforeRequest"];
+    after_request: cache_state def [@default None] [@key "afterRequest"];
   } [@@deriving yojson]
 
   type timings = {
-    blocked: float;
-    dns: float;
-    ssl: float;
-    connect: float;
+    blocked: float [@default -1.];
+    dns: float [@default -1.];
+    ssl: float [@default -1.];
+    connect: float [@default -1.];
     send: float;
     wait: float;
     receive: float;
-    blocked_queueing: float [@key "_blocked_queueing"];
+    blocked_queueing: float def [@default None] [@key "_blocked_queueing"];
   } [@@deriving yojson]
 
   type t = {
-    from_cache: string option [@key "_fromCache"];
-    initiator: Initiator.t [@key "_initiator"];
-    priority: priority [@key "_priority"];
-    resource_type: resource_type [@key "_resourceType"];
+    from_cache: string def [@default None] [@key "_fromCache"];
+    initiator: Initiator.t def [@default None] [@key "_initiator"];
+    priority: priority def [@default None] [@key "_priority"];
+    resource_type: resource_type def [@default None] [@key "_resourceType"];
     cache: cache option;
-    connection: string option;
-    page_ref: string option [@key "pageref"];
+    connection: string def [@default None];
+    page_ref: string def [@default None] [@key "pageref"];
     request: Request.t;
     response: Response.t;
-    server_ip_address: string [@key "serverIPAddress"];
+    server_ip_address: string def [@default None] [@key "serverIPAddress"];
     started_date_time: dt [@key "startedDateTime"];
     time: float;
     timings: timings;
@@ -184,7 +194,7 @@ end
 type log = {
   version: string;
   creator: creator;
-  pages: Page.t list;
+  pages: Page.t list [@default []];
   entries: Entry.t list;
 } [@@deriving yojson]
 
