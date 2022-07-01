@@ -66,10 +66,16 @@ module Entry = struct
 
     type description = string [@@deriving yojson] (* TODO Image, etc.? *)
 
+    type parent_id = {
+      id: string;
+      debugger_id: string [@key "debuggerId"];
+    } [@@deriving yojson]
+
     type stack = {
       description: description def [@default None];
       call_frames: call_frame list [@key "callFrames"];
       parent: stack def [@default None];
+      parent_id: parent_id def [@default None] [@key "parentId"];
     } [@@deriving yojson]
 
     type script = {
