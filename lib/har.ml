@@ -158,9 +158,12 @@ module Entry = struct
 
   module Request = struct
     type meth =
+      | HEAD
       | GET
       | POST
-      (* FIXME *)
+      | OPTIONS
+      | PUT
+      | DELETE
       [@@deriving yojson]
 
     type post_data = {
