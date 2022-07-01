@@ -43,7 +43,7 @@ let debug_to_yojson f x = f x
 module Page = struct
   type page_timings = {
     on_content_load: float [@default -1.] [@key "onContentLoad"];
-    on_load: float [@default -1.] [@key "onLoad"];
+    on_load: float option def [@default None] [@key "onLoad"];
   } [@@deriving yojson]
 
   type t = {
