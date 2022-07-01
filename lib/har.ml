@@ -166,10 +166,18 @@ module Entry = struct
       | DELETE
       [@@deriving yojson]
 
+    type param = {
+      name: string;
+      value: string;
+      file_name: string def [@default None] [@key "fileName"];
+      content_type: mime_type def [@default None] [@key "contentType"];
+      encoding: string def [@default None];
+    } [@@deriving yojson]
+
     type post_data = {
       mime_type: mime_type [@key "mimeType"];
       text: string;
-      params: nv list [@default []];
+      params: param list [@default []];
     } [@@deriving yojson]
 
     type t = {
