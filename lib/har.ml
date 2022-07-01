@@ -145,7 +145,7 @@ module Entry = struct
     type post_data = {
       mime_type: mime_type [@key "mimeType"];
       text: string;
-      params: nv list;
+      params: nv list [@default []];
     } [@@deriving yojson]
 
     type t = {
