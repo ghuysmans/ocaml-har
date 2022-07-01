@@ -32,6 +32,14 @@ let tag_to_yojson f x =
   | `List (h :: _) -> h
   | _ -> failwith "tag_to_yojson"
 
+type 'a cap = 'a
+let cap_of_yojson f j =
+  Yojson.Safe.Util.map (function
+    | `String s -> `String (String.capitalize_ascii s)
+    | x -> x
+  ) j |> f
+let cap_to_yojson f x = f x
+
 module Page = struct
   type page_timings = {
     on_content_load: float [@default -1.] [@key "onContentLoad"];
@@ -124,7 +132,7 @@ module Entry = struct
     expires: dt def [@default None];
     http_only: bool def [@default None] [@key "httpOnly"];
     secure: bool def [@default None];
-    same_site: same_site tag def [@default None] [@key "sameSite"];
+    same_site: same_site cap tag def [@default None] [@key "sameSite"];
   } [@@deriving yojson]
 
   module Request = struct
