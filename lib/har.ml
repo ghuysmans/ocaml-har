@@ -1,4 +1,4 @@
-type creator = {
+type software = {
   name: string;
   version: string;
 } [@@deriving yojson]
@@ -275,7 +275,8 @@ end
 
 type log = {
   version: string;
-  creator: creator;
+  creator: software;
+  browser: software def [@default None];
   pages: Page.t list [@default []];
   entries: Entry.t debug list;
 } [@@deriving yojson]
