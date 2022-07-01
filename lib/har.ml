@@ -58,22 +58,49 @@ module Entry = struct
 
     type description = string [@@deriving yojson] (* TODO Image, etc.? *)
 
-    type parent = {
-      description: description;
-      call_frames: call_frame list [@key "callFrames"];
-    } [@@deriving yojson]
-
     type stack = {
+      description: description def [@default None];
       call_frames: call_frame list [@key "callFrames"];
-      parent: parent def [@default None];
+      parent: stack def [@default None];
     } [@@deriving yojson]
 
-    type typ = string [@@deriving yojson] (* TODO script, etc. *)
-
-    type t = {
-      typ: typ [@key "type"];
+    type script = {
+      typ: string [@key "type"];
       stack: stack;
     } [@@deriving yojson]
+
+    type parser = {
+      typ: string [@key "type"];
+      url: uri;
+      line_number: int def [@default None] [@key "lineNumber"];
+    } [@@deriving yojson]
+
+    type t =
+      | Other
+      | Parser of Uri.t * int option
+      | Script of stack
+
+    let of_yojson = function
+      | `Assoc l as y ->
+        begin match List.assoc "type" l with
+        | `String "script" ->
+          script_of_yojson y |>
+          Result.map (fun {stack; _} -> Script stack)
+        | `String "parser" ->
+          parser_of_yojson y |>
+          Result.map (fun {url; line_number; _} -> Parser (url, line_number))
+        | `String "other" -> Ok Other
+        | _ -> Error "Entry.Initiator.of_yojson"
+        end
+      | _ -> Error "Entry.Initiator.of_yojson"
+
+    let to_yojson = function
+      | Script stack ->
+        script_to_yojson {typ = "stack"; stack}
+      | Parser (url, line_number) ->
+        parser_to_yojson {typ = "parser"; url; line_number}
+      | Other ->
+        `Assoc ["type", `String "other"]
   end
 
   type nv = {
