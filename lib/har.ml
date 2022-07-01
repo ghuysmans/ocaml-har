@@ -35,6 +35,11 @@ let cap_of_yojson f j =
   ) j |> f
 let cap_to_yojson f x = f x
 
+type 'a debug = 'a
+let debug_of_yojson f j =
+  Result.map_error (fun e -> Yojson.Safe.to_channel stderr j; e) (f j)
+let debug_to_yojson f x = f x
+
 module Page = struct
   type page_timings = {
     on_content_load: float [@default -1.] [@key "onContentLoad"];
@@ -235,7 +240,7 @@ type log = {
   version: string;
   creator: creator;
   pages: Page.t list [@default []];
-  entries: Entry.t list;
+  entries: Entry.t debug list;
 } [@@deriving yojson]
 
 type t = {
