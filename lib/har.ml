@@ -217,11 +217,26 @@ module Entry = struct
     blocked_queueing: float def [@default None] [@key "_blocked_queueing"];
   } [@@deriving yojson]
 
+  module Websocket_message = struct
+    type typ =
+      | Receive
+      | Send
+      [@@deriving yojson]
+
+    type t = {
+      typ: typ cap tag [@key "type"];
+      time: float;
+      opcode: int;
+      data: string;
+    } [@@deriving yojson]
+  end
+
   type t = {
     from_cache: string def [@default None] [@key "_fromCache"];
     initiator: Initiator.t def [@default None] [@key "_initiator"];
-    priority: priority def [@default None] [@key "_priority"];
+    priority: priority option def [@default None] [@key "_priority"];
     resource_type: resource_type def [@default None] [@key "_resourceType"];
+    websocket_messages: Websocket_message.t list def [@default None] [@key "_webSocketMessages"];
     cache: cache option;
     connection: string def [@default None];
     page_ref: string def [@default None] [@key "pageref"];
