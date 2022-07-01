@@ -129,7 +129,7 @@ module Entry = struct
     value: string;
     path: string def [@default None];
     domain: string def [@default None];
-    expires: dt def [@default None];
+    expires: dt option def [@default None];
     http_only: bool def [@default None] [@key "httpOnly"];
     secure: bool def [@default None];
     same_site: same_site cap tag def [@default None] [@key "sameSite"];
