@@ -89,10 +89,17 @@ module Entry = struct
       line_number: int def [@default None] [@key "lineNumber"];
     } [@@deriving yojson]
 
+    type preflight = {
+      typ: string [@key "type"];
+      url: uri;
+    } [@@deriving yojson]
+
     type t =
       | Other
       | Parser of Uri.t * int option
       | Script of stack
+      | Preload
+      | Preflight of Uri.t
 
     let of_yojson = function
       | `Assoc l as y ->
@@ -104,6 +111,10 @@ module Entry = struct
           parser_of_yojson y |>
           Result.map (fun {url; line_number; _} -> Parser (url, line_number))
         | `String "other" -> Ok Other
+        | `String "preload" -> Ok Preload
+        | `String "preflight" ->
+          preflight_of_yojson y |>
+          Result.map (fun {url; _} -> Preflight url)
         | _ -> Error "Entry.Initiator.of_yojson"
         end
       | _ -> Error "Entry.Initiator.of_yojson"
@@ -115,6 +126,10 @@ module Entry = struct
         parser_to_yojson {typ = "parser"; url; line_number}
       | Other ->
         `Assoc ["type", `String "other"]
+      | Preload ->
+        `Assoc ["type", `String "preload"]
+      | Preflight url ->
+        preflight_to_yojson {typ = "parser"; url}
   end
 
   type nv = {
