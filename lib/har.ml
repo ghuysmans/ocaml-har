@@ -15,18 +15,13 @@ let uri_to_yojson u = `String (Uri.to_string u)
 
 type 'a def = 'a option
 let def_of_yojson f j =
-  match f j with
-  | Error e -> Error e
-  | Ok x -> Ok (Some x)
+  Result.map (fun x -> Some x) (f j)
 let def_to_yojson f = function
   | None -> failwith "def_to_yojson: please specify [@default None]"
   | Some x -> f x
 
 type 'a tag = 'a
-let tag_of_yojson f j =
-  match f (`List [j]) with
-  | Error e -> Error e
-  | Ok x -> Ok x
+let tag_of_yojson f j = f (`List [j])
 let tag_to_yojson f x =
   match f x with
   | `List (h :: _) -> h
