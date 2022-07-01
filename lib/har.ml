@@ -174,8 +174,6 @@ module Entry = struct
       encoding: encoding tag def [@default None];
     } [@@deriving yojson]
 
-    type error = unit [@@deriving yojson] (* FIXME *)
-
     type t = {
       status: int;
       status_text: string [@key "statusText"];
@@ -187,7 +185,7 @@ module Entry = struct
       headers_size: int [@key "headersSize"];
       body_size: int [@key "bodySize"];
       transfer_size: int def [@default None] [@key "_transferSize"];
-      error: error def [@default None] [@key "_error"];
+      error: string option def [@default None] [@key "_error"];
       fulfilled_by: string def [@default None] [@key "_fulfilledBy"];
     } [@@deriving yojson]
   end
