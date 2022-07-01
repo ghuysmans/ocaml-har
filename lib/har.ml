@@ -110,29 +110,29 @@ module Entry = struct
 
   type mime_type = string [@@deriving yojson]
 
+  type same_site =
+    | Lax
+    | Strict
+    | No [@name "None"]
+    [@@deriving yojson]
+
+  type cookie = {
+    name: string;
+    value: string;
+    path: string def [@default None];
+    domain: string def [@default None];
+    expires: dt def [@default None];
+    http_only: bool def [@default None] [@key "httpOnly"];
+    secure: bool def [@default None];
+    same_site: same_site tag def [@default None] [@key "sameSite"];
+  } [@@deriving yojson]
+
   module Request = struct
     type meth =
       | GET
       | POST
       (* FIXME *)
       [@@deriving yojson]
-
-    type same_site =
-      | Lax
-      | Strict
-      | No [@name "None"]
-      [@@deriving yojson]
-
-    type cookie = {
-      name: string;
-      value: string;
-      path: string def [@default None];
-      domain: string def [@default None];
-      expires: dt def [@default None];
-      http_only: bool def [@default None] [@key "httpOnly"];
-      secure: bool def [@default None];
-      same_site: same_site tag def [@default None] [@key "sameSite"];
-    } [@@deriving yojson]
 
     type post_data = {
       mime_type: mime_type [@key "mimeType"];
@@ -173,7 +173,7 @@ module Entry = struct
       status_text: string [@key "statusText"];
       http_version: string [@key "httpVersion"];
       headers: nv list;
-      cookies: nv list;
+      cookies: cookie list;
       content: content option;
       redirect_url: uri [@key "redirectURL"];
       headers_size: int [@key "headersSize"];
