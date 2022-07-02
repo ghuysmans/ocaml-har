@@ -1,4 +1,4 @@
 (library
- (name har)
+ (public_name har)
  (libraries uri base64)
  (preprocess (pps ppx_deriving_yojson)))
