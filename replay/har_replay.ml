@@ -43,7 +43,14 @@ module Make (Indexer : S) = struct
     ignore chunked;
     let req = Cohttp.Request.make ~meth ?headers uri in
     let t = Indexer.of_cohttp ?body uri req in
-    Lwt.return (M.find t !ctx)
+    Lwt.return
+      begin match M.find_opt t !ctx with
+      | Some x -> x
+      | None ->
+        Cohttp.Response.make ~status:`Not_found (),
+        Cohttp_lwt.Body.of_string @@
+          Sexplib0.Sexp.to_string_hum (Indexer.sexp_of_t t)
+      end
 
   let callv ?ctx _uri _stream =
     ignore ctx;
