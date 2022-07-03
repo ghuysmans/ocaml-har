@@ -18,4 +18,9 @@
  (synopsis "HTTP Archive parser and tools")
  (depends ocaml dune base64 ppx_deriving_yojson))
 
+(package
+ (name har-replay)
+ (synopsis "HTTP Archive replay proxy for Cohttp")
+ (depends ocaml dune har cohttp-lwt))
+
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
