@@ -81,5 +81,6 @@ module Make (Indexer : S) = struct
     call ?ctx ?body ?chunked ?headers `DELETE uri
 
   let head ?ctx ?headers uri =
-    call ?ctx ?headers `HEAD uri
+    let open Lwt.Infix in
+    call ?ctx ?headers `HEAD uri >|= fst
 end
