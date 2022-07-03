@@ -18,9 +18,8 @@ module Make (Indexer : S) = struct
         Indexer.sexp_of_t
         (sexp_of_pair Response.sexp_of_t Body.sexp_of_t)))
 
-  let index (h : Har.t) =
-    h.log.entries |>
-    List.fold_left (fun acc {Har.Entry.request; response; _} ->
+  let index {Har.log = {entries; _}} =
+    ref @@ List.fold_left (fun acc {Har.Entry.request; response; _} ->
       match Indexer.of_har request with
       | None -> acc
       | Some t ->
@@ -36,8 +35,7 @@ module Make (Indexer : S) = struct
           | _ -> Cohttp_lwt.Body.empty
         in
         M.add t (resp, body) acc
-    ) M.empty |>
-    ref
+    ) M.empty entries
 
   let call ?(ctx : ctx = default_ctx) ?headers ?body ?chunked meth uri =
     ignore chunked;
