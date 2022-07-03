@@ -1,5 +1,6 @@
 (executable
  (public_name har)
- (package har)
+ (package har-replay)
  (name main)
- (libraries har))
+ (libraries har-replay lwt.unix)
+ (preprocess (pps lwt_ppx)))
