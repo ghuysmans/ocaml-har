@@ -1,9 +1,24 @@
+type response = Cohttp.Response.t * Cohttp_lwt.Body.t
+
 module type S = sig
   include Map.OrderedType
   val sexp_of_t : t -> Sexplib0.Sexp.t
-  val of_har : Har.Entry.Request.t -> t list
+  val of_har : Har.Entry.Request.t -> Har.Entry.Response.t -> (t * response) list
   val of_cohttp : ?body:string -> Uri.t -> Cohttp.Request.t -> t
 end
+
+let response_of_har (response : Har.Entry.Response.t) =
+  let status = Cohttp.Code.status_of_code response.status in
+  let headers =
+    List.map (fun (x : Har.Entry.nv) -> x.name, x.value) response.headers |>
+    Cohttp.Header.of_list
+  in
+  Cohttp_lwt.Response.make ~status ~headers ()
+
+let body_of_har (response : Har.Entry.Response.t) =
+  match response.content with
+  | Some {text = Some x; _} -> Cohttp_lwt.Body.of_string x
+  | _ -> Cohttp_lwt.Body.empty
 
 module Make (Indexer : S) = struct
   module M = Map.Make (Indexer)
@@ -20,21 +35,8 @@ module Make (Indexer : S) = struct
 
   let index {Har.log = {entries; _}} =
     ref @@ List.fold_left (fun acc {Har.Entry.request; response; _} ->
-      Indexer.of_har request |>
-      List.fold_left (fun acc t ->
-        let status = Cohttp.Code.status_of_code response.status in
-        let headers =
-          List.map (fun (x : Har.Entry.nv) -> x.name, x.value) response.headers |>
-          Cohttp.Header.of_list
-        in
-        let resp = Cohttp_lwt.Response.make ~status ~headers () in
-        let body =
-          match response.content with
-          | Some {text = Some x; _} -> Cohttp_lwt.Body.of_string x
-          | _ -> Cohttp_lwt.Body.empty
-        in
-        M.add t (resp, body) acc
-      ) acc
+      Indexer.of_har request response |>
+      List.fold_left (fun acc (t, r) -> M.add t r acc) acc
     ) M.empty entries
 
   let call ?(ctx : ctx = default_ctx) ?headers ?body ?chunked meth uri =

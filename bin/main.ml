@@ -3,8 +3,10 @@ module C = Har_replay.Make (struct
   let compare = compare
   let sexp_of_t x = Sexplib0.Sexp.Atom (Uri.to_string x)
 
-  let of_har = function
-    | {Har.Entry.Request.meth = GET; url; _} -> [url]
+  let of_har req resp =
+    match req with
+    | {Har.Entry.Request.meth = GET; url; _} ->
+      [url, Har_replay.(response_of_har resp, body_of_har resp)]
     | _ -> []
 
   let of_cohttp ?body uri = function
