@@ -1,7 +1,7 @@
 module type S = sig
   include Map.OrderedType
   val sexp_of_t : t -> Sexplib0.Sexp.t
-  val of_har : Har.Entry.Request.t -> t option
+  val of_har : Har.Entry.Request.t -> t list
   val of_cohttp : ?body:string -> Uri.t -> Cohttp.Request.t -> t
 end
 

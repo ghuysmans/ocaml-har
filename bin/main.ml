@@ -4,8 +4,8 @@ module C = Har_replay.Make (struct
   let sexp_of_t x = Sexplib0.Sexp.Atom (Uri.to_string x)
 
   let of_har = function
-    | {Har.Entry.Request.meth = GET; url; _} -> Some url
-    | _ -> None
+    | {Har.Entry.Request.meth = GET; url; _} -> [url]
+    | _ -> []
 
   let of_cohttp ?body uri = function
     | {Cohttp.Request.meth = `GET; _} -> ignore body; uri

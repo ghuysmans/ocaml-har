@@ -1,7 +1,7 @@
 module type S = sig
   include Map.OrderedType
   val sexp_of_t : t -> Sexplib0.Sexp.t
-  val of_har : Har.Entry.Request.t -> t option
+  val of_har : Har.Entry.Request.t -> t list
   val of_cohttp : ?body:string -> Uri.t -> Cohttp.Request.t -> t
 end
 
@@ -20,9 +20,8 @@ module Make (Indexer : S) = struct
 
   let index {Har.log = {entries; _}} =
     ref @@ List.fold_left (fun acc {Har.Entry.request; response; _} ->
-      match Indexer.of_har request with
-      | None -> acc
-      | Some t ->
+      Indexer.of_har request |>
+      List.fold_left (fun acc t ->
         let status = Cohttp.Code.status_of_code response.status in
         let headers =
           List.map (fun (x : Har.Entry.nv) -> x.name, x.value) response.headers |>
@@ -35,6 +34,7 @@ module Make (Indexer : S) = struct
           | _ -> Cohttp_lwt.Body.empty
         in
         M.add t (resp, body) acc
+      ) acc
     ) M.empty entries
 
   let call ?(ctx : ctx = default_ctx) ?headers ?body ?chunked meth uri =
