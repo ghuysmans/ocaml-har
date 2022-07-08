@@ -2,7 +2,7 @@ module type S = sig
   include Map.OrderedType
   val sexp_of_t : t -> Sexplib0.Sexp.t
   val of_har : Har.Entry.Request.t -> t option
-  val of_cohttp : ?body:Cohttp_lwt.Body.t -> Uri.t -> Cohttp_lwt.Request.t -> t
+  val of_cohttp : ?body:string -> Uri.t -> Cohttp.Request.t -> t
 end
 
 module Make (Indexer : S) = struct
@@ -40,15 +40,21 @@ module Make (Indexer : S) = struct
   let call ?(ctx : ctx = default_ctx) ?headers ?body ?chunked meth uri =
     ignore chunked;
     let req = Cohttp.Request.make ~meth ?headers uri in
-    let t = Indexer.of_cohttp ?body uri req in
-    Lwt.return
-      begin match M.find_opt t !ctx with
+    let f body =
+      let t = Indexer.of_cohttp ?body uri req in
+      match M.find_opt t !ctx with
       | Some x -> x
       | None ->
         Cohttp.Response.make ~status:`Not_found (),
         Cohttp_lwt.Body.of_string @@
           Sexplib0.Sexp.to_string_hum (Indexer.sexp_of_t t)
-      end
+    in
+    match body with
+    | None -> Lwt.return (f None)
+    | Some b ->
+      let open Lwt.Infix in
+      Cohttp_lwt.Body.to_string b >|= fun s ->
+      f (Some s)
 
   let callv ?ctx _uri _stream =
     ignore ctx;
