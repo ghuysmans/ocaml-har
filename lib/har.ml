@@ -187,7 +187,7 @@ module Entry = struct
       headers: nv list;
       query_string: nv list [@key "queryString"];
       cookies: cookie list;
-      headers_size: int [@key "headersSize"];
+      headers_size: int option [@key "headersSize"] [@default None];
       body_size: int [@key "bodySize"];
       post_data: post_data def [@default None] [@key "postData"];
     } [@@deriving yojson]
@@ -199,9 +199,9 @@ module Entry = struct
       [@@deriving yojson]
 
     type content = {
-      size: int;
+      size: int [@default 0];
       compression: int def [@default None];
-      mime_type: mime_type [@key "mimeType"];
+      mime_type: mime_type [@key "mimeType"] [@default ""];
       text: string def [@default None];
       encoding: encoding tag def [@default None];
       comment: string [@default ""];
@@ -215,7 +215,7 @@ module Entry = struct
       cookies: cookie list;
       content: content option;
       redirect_url: uri [@key "redirectURL"];
-      headers_size: int [@key "headersSize"];
+      headers_size: int [@key "headersSize"] [@default 0];
       body_size: int [@key "bodySize"];
       transfer_size: int def [@default None] [@key "_transferSize"];
       error: string option def [@default None] [@key "_error"];
@@ -244,9 +244,9 @@ module Entry = struct
     dns: float [@default -1.];
     ssl: float [@default -1.];
     connect: float [@default -1.];
-    send: float;
-    wait: float;
-    receive: float;
+    send: float [@default -1.];
+    wait: float [@default -1.];
+    receive: float [@default -1.];
     blocked_queueing: float def [@default None] [@key "_blocked_queueing"];
   } [@@deriving yojson]
 
