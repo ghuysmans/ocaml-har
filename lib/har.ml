@@ -278,6 +278,7 @@ module Entry = struct
     started_date_time: dt [@key "startedDateTime"];
     time: float;
     timings: timings;
+    security_state: string def [@default None] [@key "_securityState"];
   } [@@deriving yojson]
 end
 
