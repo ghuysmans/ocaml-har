@@ -204,6 +204,7 @@ module Entry = struct
       mime_type: mime_type [@key "mimeType"];
       text: string def [@default None];
       encoding: encoding tag def [@default None];
+      comment: string [@default ""];
     } [@@deriving yojson]
 
     type t = {
